@@ -29,6 +29,8 @@ services:
       - POSTGRES_DB=document_sharing
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
+      - ./src/database/migrations/sql:/docker-entrypoint-initdb.d
+
 
   pgadmin:
     image: dpage/pgadmin4

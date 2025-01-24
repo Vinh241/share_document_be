@@ -30,6 +30,7 @@ services:
       - POSTGRES_DB=document_sharing
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./src/database/migrations/sql:/docker-entrypoint-initdb.d
     restart: unless-stopped
 
   pgadmin:
