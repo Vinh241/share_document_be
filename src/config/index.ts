@@ -16,6 +16,13 @@ const config: Config = {
     secret: process.env.JWT_SECRET || "your-secret-key",
     expiresIn: process.env.JWT_EXPIRES_IN || "24h",
   },
+  cors: {
+    enabled: process.env.CORS_ENABLED === "true",
+    origins: process.env.CORS_ORIGINS?.split(",") || [
+      "http://localhost:5100",
+      "http://localhost:5173",
+    ],
+  },
 };
 
 export default config;

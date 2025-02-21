@@ -1,17 +1,18 @@
 import { Router } from "express";
 import userRoutes from "./userRoutes";
+import documentRoutes from "./documentRoutes";
 
 const router = Router();
 
-// Mount user routes
+// Mount routes
 router.use("/users", userRoutes);
-
+router.use("/documents", documentRoutes);
 // Root API route
-router.get("/", (_req, res) => {
-  console.log("API root route hit 123");
+router.get("/test", (_req, res) => {
+  console.log("API root route hit 1hhj3123 123");
   res.json({
     status: "success",
-    message: "API is running",
+    message: "Test",
   });
 });
 
