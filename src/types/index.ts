@@ -34,6 +34,7 @@ export interface GetDocumentsQuery {
   categoryId?: number;
   subjectId?: number;
   universityId?: number;
+  search?: string;
 }
 
 export interface PaginatedResponse<T> {

@@ -17,6 +17,7 @@ export const getDocuments = async (
       categoryId,
       subjectId,
       universityId,
+      search,
     } = req.query;
 
     // Build base query
@@ -60,6 +61,9 @@ export const getDocuments = async (
     if (universityId) {
       baseQuery.where("documents.university_id", universityId);
     }
+    if (search) {
+      baseQuery.whereRaw("LOWER(documents.title) LIKE LOWER(?)", [`%${search}%`]);
+    }
 
     // Get total count using a separate simple count query
     const countQuery = db("documents")
@@ -69,6 +73,7 @@ export const getDocuments = async (
         if (categoryId) qb.where("category_id", categoryId);
         if (subjectId) qb.where("subject_id", subjectId);
         if (universityId) qb.where("university_id", universityId);
+        if (search) qb.whereRaw("LOWER(title) LIKE LOWER(?)", [`%${search}%`]);
       });
 
     const [count] = await countQuery;
