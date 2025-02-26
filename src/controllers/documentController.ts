@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import db from "../database/connection";
 import { GetDocumentsQuery, PaginatedResponse } from "../types";
+import { AppError } from "src/middleware/errorHandler";
 
 export const getDocuments = async (
   req: Request<{}, {}, {}, GetDocumentsQuery>,
@@ -93,6 +94,58 @@ export const getDocuments = async (
     res.json({
       status: "success",
       ...response,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createDocument = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name, type, school, subject, price } = req.body;
+
+    if (!name || !type || !school || !subject || !price) {
+      throw new AppError("Missing required fields", 400);
+    }
+
+    // Lấy file upload
+    // Kiểm tra nếu req.files tồn tại và là một object
+    const files = req.files as
+      | { [fieldname: string]: Express.Multer.File[] }
+      | undefined;
+
+    const image = files?.["image"] ? files["image"][0].filename : null;
+    const file = files?.["file"] ? files["file"][0].filename : null;
+
+    // Lưu vào PostgreSQL
+    const [document] = await db("documents")
+      .insert({
+        name,
+        type,
+        school,
+        subject,
+        price,
+        image,
+        file,
+      })
+      .returning([
+        "id",
+        "name",
+        "type",
+        "school",
+        "subject",
+        "price",
+        "image",
+        "file",
+      ]);
+
+    res.status(201).json({
+      status: "success",
+      data: document,
     });
   } catch (error) {
     next(error);
