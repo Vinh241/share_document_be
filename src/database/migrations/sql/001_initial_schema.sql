@@ -91,6 +91,7 @@ CREATE TABLE products (
   price DECIMAL(10,2) NOT NULL,
   sale_price DECIMAL(10,2),
   stock_quantity INT NOT NULL DEFAULT 0,
+  quantity_sold INT NOT NULL DEFAULT 0,
   category_id BIGINT REFERENCES categories(id),
   publisher_id BIGINT REFERENCES publishers(id),
   author_id BIGINT REFERENCES authors(id),

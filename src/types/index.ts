@@ -104,6 +104,7 @@ export interface Product {
   price: number;
   sale_price?: number;
   stock_quantity: number;
+  quantity_sold: number;
   category_id?: number;
   publisher_id?: number;
   author_id?: number;

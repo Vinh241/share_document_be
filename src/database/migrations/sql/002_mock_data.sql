@@ -43,13 +43,13 @@ VALUES
   ('Michelle Obama', 'American attorney and author who served as the First Lady of the United States.');
 
 -- Insert products
-INSERT INTO products (name, slug, description, price, sale_price, stock_quantity, category_id, publisher_id, author_id, isbn, publication_date)
+INSERT INTO products (name, slug, description, price, sale_price, stock_quantity, quantity_sold, category_id, publisher_id, author_id, isbn, publication_date)
 VALUES
-  ('Harry Potter and the Philosopher''s Stone', 'harry-potter-philosophers-stone', 'The first novel in the Harry Potter series.', 19.99, 15.99, 50, 4, 1, 1, '9780747532743', '1997-06-26'),
-  ('The Shining', 'the-shining', 'A horror novel by Stephen King.', 15.99, 12.99, 30, 5, 2, 2, '9780307743657', '1977-01-28'),
-  ('Pride and Prejudice', 'pride-and-prejudice', 'A romantic novel by Jane Austen.', 12.99, 9.99, 45, 1, 3, 3, '9780141439518', '1813-01-28'),
-  ('1984', '1984', 'A dystopian social science fiction novel by George Orwell.', 14.99, 11.99, 60, 3, 4, 4, '9780451524935', '1949-06-08'),
-  ('Becoming', 'becoming', 'A memoir by Michelle Obama.', 24.99, 19.99, 75, 6, 1, 5, '9781524763138', '2018-11-13');
+  ('Harry Potter and the Philosopher''s Stone', 'harry-potter-philosophers-stone', 'The first novel in the Harry Potter series.', 19.99, 15.99, 50, 120, 4, 1, 1, '9780747532743', '1997-06-26'),
+  ('The Shining', 'the-shining', 'A horror novel by Stephen King.', 15.99, 12.99, 30, 85, 5, 2, 2, '9780307743657', '1977-01-28'),
+  ('Pride and Prejudice', 'pride-and-prejudice', 'A romantic novel by Jane Austen.', 12.99, 9.99, 45, 67, 1, 3, 3, '9780141439518', '1813-01-28'),
+  ('1984', '1984', 'A dystopian social science fiction novel by George Orwell.', 14.99, 11.99, 60, 93, 3, 4, 4, '9780451524935', '1949-06-08'),
+  ('Becoming', 'becoming', 'A memoir by Michelle Obama.', 24.99, 19.99, 75, 145, 6, 1, 5, '9781524763138', '2018-11-13');
 
 -- Insert product images
 INSERT INTO product_images (product_id, image_url, is_primary)
