@@ -3,133 +3,170 @@ import { Knex } from "knex";
 export async function up(knex: Knex): Promise<void> {
   // Create ENUM types
   await knex.raw(`
-    CREATE TYPE user_status AS ENUM ('active', 'draft', 'pending');
-    CREATE TYPE order_status AS ENUM ('active', 'draft', 'pending', 'completed', 'cancelled');
-    CREATE TYPE transaction_type AS ENUM ('deposit', 'withdrawal', 'purchase', 'sale', 'referral');
-    CREATE TYPE transaction_status AS ENUM ('active', 'draft', 'pending', 'completed', 'failed');
-    CREATE TYPE referral_status AS ENUM ('active', 'draft', 'pending', 'paid', 'cancelled');
+    CREATE TYPE user_status AS ENUM ('active', 'inactive', 'pending');
+    CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled');
+    CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed', 'refunded');
+    CREATE TYPE payment_method AS ENUM ('credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery');
   `);
 
   // Create users table
   await knex.schema.createTable("users", (table) => {
-    table.increments("user_id").primary();
-    table.string("username").unique().notNullable();
-    table.string("email").unique().notNullable();
-    table.string("password_hash").notNullable();
-    table.string("full_name");
-    table.string("phone");
-    table.decimal("balance", 15, 2).defaultTo(0);
-    table.string("referral_code").unique();
-    table.specificType("status", "user_status").defaultTo("pending");
+    table.bigIncrements("id").primary();
+    table.string("email", 255).unique().notNullable();
+    table.string("phone_number", 20).unique();
+    table.string("password_hash", 255).notNullable();
+    table.string("full_name", 255).notNullable();
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
-    table.boolean("is_deleted").defaultTo(false);
+  });
+
+  // Create addresses table
+  await knex.schema.createTable("addresses", (table) => {
+    table.bigIncrements("id").primary();
+    table.bigInteger("user_id").unsigned().references("id").inTable("users");
+    table.string("address_line1", 255).notNullable();
+    table.string("address_line2", 255);
+    table.string("city", 100).notNullable();
+    table.string("state", 100).notNullable();
+    table.string("postal_code", 20).notNullable();
+    table.boolean("is_default").defaultTo(false);
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
   // Create categories table
   await knex.schema.createTable("categories", (table) => {
-    table.increments("category_id").primary();
-    table.string("name").notNullable();
-    table.text("description");
-    table.specificType("status", "user_status").defaultTo("pending");
-    table.timestamp("created_at").defaultTo(knex.fn.now());
-    table.timestamp("updated_at").defaultTo(knex.fn.now());
-  });
-
-  // Create subjects table
-  await knex.schema.createTable("subjects", (table) => {
-    table.increments("subject_id").primary();
-    table.string("name").notNullable();
-    table.text("description");
-    table.specificType("status", "user_status").defaultTo("pending");
-    table.timestamp("created_at").defaultTo(knex.fn.now());
-    table.timestamp("updated_at").defaultTo(knex.fn.now());
-  });
-
-  // Create universities table
-  await knex.schema.createTable("universities", (table) => {
-    table.increments("university_id").primary();
-    table.string("name").notNullable();
-    table.text("description");
-    table.specificType("status", "user_status").defaultTo("pending");
-    table.timestamp("created_at").defaultTo(knex.fn.now());
-    table.timestamp("updated_at").defaultTo(knex.fn.now());
-  });
-
-  // Create documents table
-  await knex.schema.createTable("documents", (table) => {
-    table.increments("document_id").primary();
-    table.string("title").notNullable();
-    table.text("description");
-    table.decimal("price", 15, 2).notNullable();
-    table.string("file_path").notNullable();
-    table.string("instruct_path");
-    table.integer("user_id").references("user_id").inTable("users");
+    table.bigIncrements("id").primary();
+    table.string("name", 255).notNullable();
+    table.string("slug", 255).unique().notNullable();
     table
-      .integer("category_id")
-      .references("category_id")
+      .bigInteger("parent_id")
+      .unsigned()
+      .references("id")
       .inTable("categories");
-    table.integer("subject_id").references("subject_id").inTable("subjects");
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
+  });
+
+  // Create publishers table
+  await knex.schema.createTable("publishers", (table) => {
+    table.bigIncrements("id").primary();
+    table.string("name", 255).notNullable();
+    table.text("description");
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
+  });
+
+  // Create authors table
+  await knex.schema.createTable("authors", (table) => {
+    table.bigIncrements("id").primary();
+    table.string("name", 255).notNullable();
+    table.text("biography");
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
+  });
+
+  // Create products table
+  await knex.schema.createTable("products", (table) => {
+    table.bigIncrements("id").primary();
+    table.string("name", 255).notNullable();
+    table.string("slug", 255).unique().notNullable();
+    table.text("description");
+    table.decimal("price", 10, 2).notNullable();
+    table.decimal("sale_price", 10, 2);
+    table.integer("stock_quantity").notNullable().defaultTo(0);
     table
-      .integer("university_id")
-      .references("university_id")
-      .inTable("universities");
-    table.integer("view_count").defaultTo(0);
-    table.integer("download_count").defaultTo(0);
-    table.specificType("status", "user_status").defaultTo("pending");
+      .bigInteger("category_id")
+      .unsigned()
+      .references("id")
+      .inTable("categories");
+    table
+      .bigInteger("publisher_id")
+      .unsigned()
+      .references("id")
+      .inTable("publishers");
+    table
+      .bigInteger("author_id")
+      .unsigned()
+      .references("id")
+      .inTable("authors");
+    table.string("isbn", 13);
+    table.date("publication_date");
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
+  });
+
+  // Create product_images table
+  await knex.schema.createTable("product_images", (table) => {
+    table.bigIncrements("id").primary();
+    table
+      .bigInteger("product_id")
+      .unsigned()
+      .references("id")
+      .inTable("products");
+    table.string("image_url", 255).notNullable();
+    table.boolean("is_primary").defaultTo(false);
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
   // Create orders table
   await knex.schema.createTable("orders", (table) => {
-    table.increments("order_id").primary();
-    table.integer("user_id").references("user_id").inTable("users");
-    table.decimal("total_amount", 15, 2).notNullable();
+    table.bigIncrements("id").primary();
+    table.bigInteger("user_id").unsigned().references("id").inTable("users");
     table.specificType("status", "order_status").defaultTo("pending");
+    table.decimal("total_amount", 10, 2).notNullable();
+    table
+      .bigInteger("shipping_address_id")
+      .unsigned()
+      .references("id")
+      .inTable("addresses");
+    table.specificType("payment_method", "payment_method").notNullable();
+    table.specificType("payment_status", "payment_status").defaultTo("pending");
     table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
   // Create order_items table
   await knex.schema.createTable("order_items", (table) => {
-    table.increments("order_item_id").primary();
-    table.integer("order_id").references("order_id").inTable("orders");
-    table.integer("document_id").references("document_id").inTable("documents");
-    table.decimal("price", 15, 2).notNullable();
-    table.specificType("status", "user_status").defaultTo("pending");
+    table.bigIncrements("id").primary();
+    table.bigInteger("order_id").unsigned().references("id").inTable("orders");
+    table
+      .bigInteger("product_id")
+      .unsigned()
+      .references("id")
+      .inTable("products");
+    table.integer("quantity").notNullable();
+    table.decimal("unit_price", 10, 2).notNullable();
     table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
-  // Create transactions table
-  await knex.schema.createTable("transactions", (table) => {
-    table.increments("transaction_id").primary();
-    table.integer("user_id").references("user_id").inTable("users");
-    table.decimal("amount", 15, 2).notNullable();
-    table.specificType("type", "transaction_type").notNullable();
-    table.specificType("status", "transaction_status").defaultTo("pending");
-    table.integer("reference_id");
-    table.text("description");
+  // Create reviews table
+  await knex.schema.createTable("reviews", (table) => {
+    table.bigIncrements("id").primary();
+    table.bigInteger("user_id").unsigned().references("id").inTable("users");
+    table
+      .bigInteger("product_id")
+      .unsigned()
+      .references("id")
+      .inTable("products");
+    table.integer("rating").notNullable();
+    table.text("comment");
     table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
-  // Create referral_history table
-  await knex.schema.createTable("referral_history", (table) => {
-    table.increments("referral_id").primary();
-    table.integer("referrer_id").references("user_id").inTable("users");
-    table.integer("referred_id").references("user_id").inTable("users");
-    table.integer("order_id").references("order_id").inTable("orders");
-    table.decimal("commission_amount", 15, 2).notNullable();
-    table.specificType("status", "referral_status").defaultTo("pending");
-    table.timestamp("created_at").defaultTo(knex.fn.now());
-  });
-
-  // Create file_images table
-  await knex.schema.createTable("file_images", (table) => {
-    table.increments("image_id").primary();
-    table.integer("document_id").references("document_id").inTable("documents");
-    table.string("image_path").notNullable();
-    table.string("name");
-    table.specificType("status", "user_status").defaultTo("pending");
+  // Create cart_items table
+  await knex.schema.createTable("cart_items", (table) => {
+    table.bigIncrements("id").primary();
+    table.bigInteger("user_id").unsigned().references("id").inTable("users");
+    table
+      .bigInteger("product_id")
+      .unsigned()
+      .references("id")
+      .inTable("products");
+    table.integer("quantity").notNullable();
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
@@ -138,23 +175,23 @@ export async function up(knex: Knex): Promise<void> {
 export async function down(knex: Knex): Promise<void> {
   // Drop tables in reverse order
   await knex.schema
-    .dropTableIfExists("file_images")
-    .dropTableIfExists("referral_history")
-    .dropTableIfExists("transactions")
+    .dropTableIfExists("cart_items")
+    .dropTableIfExists("reviews")
     .dropTableIfExists("order_items")
     .dropTableIfExists("orders")
-    .dropTableIfExists("documents")
-    .dropTableIfExists("universities")
-    .dropTableIfExists("subjects")
+    .dropTableIfExists("product_images")
+    .dropTableIfExists("products")
+    .dropTableIfExists("authors")
+    .dropTableIfExists("publishers")
     .dropTableIfExists("categories")
+    .dropTableIfExists("addresses")
     .dropTableIfExists("users");
 
   // Drop ENUM types
   await knex.raw(`
     DROP TYPE IF EXISTS user_status;
     DROP TYPE IF EXISTS order_status;
-    DROP TYPE IF EXISTS transaction_type;
-    DROP TYPE IF EXISTS transaction_status;
-    DROP TYPE IF EXISTS referral_status;
+    DROP TYPE IF EXISTS payment_status;
+    DROP TYPE IF EXISTS payment_method;
   `);
 }

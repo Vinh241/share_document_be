@@ -26,8 +26,8 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=document_sharing
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=bookstore
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./src/database/migrations/sql:/docker-entrypoint-initdb.d
