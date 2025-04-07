@@ -1,5 +1,5 @@
 import { Router } from "express";
-
+import productsRoutes from "./products";
 const router = Router();
 
 // Mount routes
@@ -19,5 +19,7 @@ router.get("/health", (_req, res) => {
     message: "API health check passed",
   });
 });
+
+router.use("/products", productsRoutes);
 
 export default router;
