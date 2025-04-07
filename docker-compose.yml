@@ -31,6 +31,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./src/database/migrations/sql:/docker-entrypoint-initdb.d
+      - ./backups:/backups
     restart: unless-stopped
 
   pgadmin:
