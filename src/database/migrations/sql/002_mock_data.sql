@@ -12,7 +12,7 @@ VALUES
   (2, '456 Main St', 'Apt 201', 'New York', 'NY', '10001', true),
   (2, '789 Work Ave', NULL, 'New York', 'NY', '10002', false),
   (3, '987 First St', NULL, 'Los Angeles', 'CA', '90001', true);
-
+-- 
 -- Insert categories
 INSERT INTO categories (name, slug, parent_id)
 VALUES
