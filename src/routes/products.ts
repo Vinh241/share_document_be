@@ -3,6 +3,9 @@ import * as productController from "../controllers/productController";
 
 const router = Router();
 
+// Get homepage product sections
+router.get("/flash-sale", productController.getFlashSaleProducts);
+
 // Get all products
 router.get("/", productController.getProducts);
 

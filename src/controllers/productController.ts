@@ -139,3 +139,21 @@ export const deleteProduct = async (
     next(error);
   }
 };
+
+/**
+ * Get flash sale products (5 products with lowest sale_price)
+ */
+export const getFlashSaleProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const limit = req.query.limit ? Number(req.query.limit) : 10;
+    const products = await productService.getFlashSaleProducts(page, limit);
+    res.json(products);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -108,6 +108,7 @@ export interface Product {
   category_id?: number;
   publisher_id?: number;
   author_id?: number;
+  author_name?: string;
   isbn?: string;
   publication_date?: Date;
   created_at: Date;

@@ -55,3 +55,72 @@ export const updateProduct = async (
 export const deleteProduct = async (id: number): Promise<boolean> => {
   return productRepository.remove(id);
 };
+
+/**
+ * Get flash sale products (limited number of products with lowest sale_price)
+ */
+export const getFlashSaleProducts = async (
+  page: number = 1,
+  limit: number = 5
+): Promise<PaginatedResponse<Product>> => {
+  const { products, total } = await productRepository.findFlashSaleProducts(
+    page,
+    limit
+  );
+
+  return {
+    data: products,
+    pagination: {
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      limit,
+    },
+  };
+};
+
+/**
+ * Get new products (limited number of newest products by created_at)
+ */
+export const getNewProducts = async (
+  page: number = 1,
+  limit: number = 5
+): Promise<PaginatedResponse<Product>> => {
+  const { products, total } = await productRepository.findNewProducts(
+    page,
+    limit
+  );
+
+  return {
+    data: products,
+    pagination: {
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      limit,
+    },
+  };
+};
+
+/**
+ * Get bestseller products (limited number of products with highest quantity_sold)
+ */
+export const getBestsellerProducts = async (
+  page: number = 1,
+  limit: number = 5
+): Promise<PaginatedResponse<Product>> => {
+  const { products, total } = await productRepository.findBestsellerProducts(
+    page,
+    limit
+  );
+
+  return {
+    data: products,
+    pagination: {
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      limit,
+    },
+  };
+};

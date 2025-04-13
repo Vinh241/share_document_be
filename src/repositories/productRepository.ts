@@ -24,28 +24,32 @@ export const findAll = async (query: GetProductsQuery) => {
   const offset = (pageNum - 1) * limitNum;
 
   // Build query
-  const dbQuery = db("products").select("*");
+  const dbQuery = db("products")
+    .select("products.*", db.raw("authors.name as author_name"))
+    .leftJoin("authors", "products.author_id", "authors.id");
 
   // Apply filters
   if (categoryId) {
-    dbQuery.where("category_id", categoryId);
+    dbQuery.where("products.category_id", categoryId);
   }
   if (publisherId) {
-    dbQuery.where("publisher_id", publisherId);
+    dbQuery.where("products.publisher_id", publisherId);
   }
   if (authorId) {
-    dbQuery.where("author_id", authorId);
+    dbQuery.where("products.author_id", authorId);
   }
   if (minPrice !== undefined) {
-    dbQuery.where("price", ">=", minPrice);
+    dbQuery.where("products.price", ">=", minPrice);
   }
   if (maxPrice !== undefined) {
-    dbQuery.where("price", "<=", maxPrice);
+    dbQuery.where("products.price", "<=", maxPrice);
   }
   if (search) {
     dbQuery
-      .whereRaw("LOWER(name) LIKE ?", [`%${search.toLowerCase()}%`])
-      .orWhereRaw("LOWER(description) LIKE ?", [`%${search.toLowerCase()}%`]);
+      .whereRaw("LOWER(products.name) LIKE ?", [`%${search.toLowerCase()}%`])
+      .orWhereRaw("LOWER(products.description) LIKE ?", [
+        `%${search.toLowerCase()}%`,
+      ]);
   }
 
   // Clone the query for count
@@ -53,7 +57,7 @@ export const findAll = async (query: GetProductsQuery) => {
 
   // Apply sorting and pagination
   const products = await dbQuery
-    .orderBy(sortBy, sortOrder)
+    .orderBy(`products.${sortBy}`, sortOrder)
     .limit(limitNum)
     .offset(offset);
 
@@ -102,4 +106,94 @@ export const update = async (
 export const remove = async (id: number): Promise<boolean> => {
   const deleted = await db("products").where("id", id).delete();
   return deleted > 0;
+};
+
+/**
+ * Find flash sale products (products with sale_price, ordered by lowest price)
+ */
+export const findFlashSaleProducts = async (
+  page: number = 1,
+  limit: number = 5
+) => {
+  const offset = (page - 1) * limit;
+
+  // Build query for products with author join
+  const productsQuery = db("products")
+    .select("products.*", db.raw("authors.name as author_name"))
+    .leftJoin("authors", "products.author_id", "authors.id")
+    .whereNotNull("sale_price")
+    .orderBy("sale_price", "asc")
+    .limit(limit)
+    .offset(offset);
+
+  // Build query for count
+  const countQuery = db("products")
+    .whereNotNull("sale_price")
+    .count({ count: "*" });
+
+  // Execute both queries
+  const products = await productsQuery;
+  const [{ count }] = await countQuery;
+
+  return {
+    products,
+    total: Number(count),
+  };
+};
+
+/**
+ * Find new products (newest products by created_at)
+ */
+export const findNewProducts = async (page: number = 1, limit: number = 5) => {
+  const offset = (page - 1) * limit;
+
+  // Build query for products with author join
+  const productsQuery = db("products")
+    .select("products.*", db.raw("authors.name as author_name"))
+    .leftJoin("authors", "products.author_id", "authors.id")
+    .orderBy("created_at", "desc")
+    .limit(limit)
+    .offset(offset);
+
+  // Build query for count
+  const countQuery = db("products").count({ count: "*" });
+
+  // Execute both queries
+  const products = await productsQuery;
+  const [{ count }] = await countQuery;
+
+  return {
+    products,
+    total: Number(count),
+  };
+};
+
+/**
+ * Find bestseller products (products with highest quantity_sold)
+ */
+export const findBestsellerProducts = async (
+  page: number = 1,
+  limit: number = 5
+) => {
+  const offset = (page - 1) * limit;
+
+  // Build query for products with author join
+  const productsQuery = db("products")
+    .select("products.*", db.raw("authors.name as author_name"))
+    .leftJoin("authors", "products.author_id", "authors.id")
+    .orderBy("quantity_sold", "desc")
+    .limit(limit)
+    .offset(offset);
+
+  // Build query for count
+  const countQuery = db("products").count({ count: "*" });
+
+  // Execute both queries
+  const products = await productsQuery;
+  const [{ count }] = await countQuery;
+
+  return {
+    products,
+    total: Number(count),
+  };
 };
