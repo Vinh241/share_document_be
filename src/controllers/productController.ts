@@ -157,3 +157,39 @@ export const getFlashSaleProducts = async (
     next(error);
   }
 };
+
+/**
+ * Get new products (newest products by created_at)
+ */
+export const getNewProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const limit = req.query.limit ? Number(req.query.limit) : 10;
+    const products = await productService.getNewProducts(page, limit);
+    res.json(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get bestseller products (products with highest quantity_sold)
+ */
+export const getBestsellerProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const limit = req.query.limit ? Number(req.query.limit) : 10;
+    const products = await productService.getBestsellerProducts(page, limit);
+    res.json(products);
+  } catch (error) {
+    next(error);
+  }
+};

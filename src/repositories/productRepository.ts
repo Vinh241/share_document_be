@@ -25,8 +25,13 @@ export const findAll = async (query: GetProductsQuery) => {
 
   // Build query
   const dbQuery = db("products")
-    .select("products.*", db.raw("authors.name as author_name"))
-    .leftJoin("authors", "products.author_id", "authors.id");
+    .select(
+      "products.*",
+      db.raw("authors.name as author_name"),
+      db.raw("publishers.name as publisher_name")
+    )
+    .leftJoin("authors", "products.author_id", "authors.id")
+    .leftJoin("publishers", "products.publisher_id", "publishers.id");
 
   // Apply filters
   if (categoryId) {
@@ -74,7 +79,18 @@ export const findAll = async (query: GetProductsQuery) => {
  * Find product by ID
  */
 export const findById = async (id: number): Promise<Product | null> => {
-  return db("products").where("id", id).first() || null;
+  return (
+    db("products")
+      .select(
+        "products.*",
+        db.raw("authors.name as author_name"),
+        db.raw("publishers.name as publisher_name")
+      )
+      .leftJoin("authors", "products.author_id", "authors.id")
+      .leftJoin("publishers", "products.publisher_id", "publishers.id")
+      .where("products.id", id)
+      .first() || null
+  );
 };
 
 /**
@@ -117,10 +133,15 @@ export const findFlashSaleProducts = async (
 ) => {
   const offset = (page - 1) * limit;
 
-  // Build query for products with author join
+  // Build query for products with author and publisher join
   const productsQuery = db("products")
-    .select("products.*", db.raw("authors.name as author_name"))
+    .select(
+      "products.*",
+      db.raw("authors.name as author_name"),
+      db.raw("publishers.name as publisher_name")
+    )
     .leftJoin("authors", "products.author_id", "authors.id")
+    .leftJoin("publishers", "products.publisher_id", "publishers.id")
     .whereNotNull("sale_price")
     .orderBy("sale_price", "asc")
     .limit(limit)
@@ -147,10 +168,15 @@ export const findFlashSaleProducts = async (
 export const findNewProducts = async (page: number = 1, limit: number = 5) => {
   const offset = (page - 1) * limit;
 
-  // Build query for products with author join
+  // Build query for products with author and publisher join
   const productsQuery = db("products")
-    .select("products.*", db.raw("authors.name as author_name"))
+    .select(
+      "products.*",
+      db.raw("authors.name as author_name"),
+      db.raw("publishers.name as publisher_name")
+    )
     .leftJoin("authors", "products.author_id", "authors.id")
+    .leftJoin("publishers", "products.publisher_id", "publishers.id")
     .orderBy("created_at", "desc")
     .limit(limit)
     .offset(offset);
@@ -177,10 +203,15 @@ export const findBestsellerProducts = async (
 ) => {
   const offset = (page - 1) * limit;
 
-  // Build query for products with author join
+  // Build query for products with author and publisher join
   const productsQuery = db("products")
-    .select("products.*", db.raw("authors.name as author_name"))
+    .select(
+      "products.*",
+      db.raw("authors.name as author_name"),
+      db.raw("publishers.name as publisher_name")
+    )
     .leftJoin("authors", "products.author_id", "authors.id")
+    .leftJoin("publishers", "products.publisher_id", "publishers.id")
     .orderBy("quantity_sold", "desc")
     .limit(limit)
     .offset(offset);

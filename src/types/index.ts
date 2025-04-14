@@ -107,6 +107,7 @@ export interface Product {
   quantity_sold: number;
   category_id?: number;
   publisher_id?: number;
+  publisher_name?: string;
   author_id?: number;
   author_name?: string;
   isbn?: string;

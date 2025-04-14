@@ -5,6 +5,8 @@ const router = Router();
 
 // Get homepage product sections
 router.get("/flash-sale", productController.getFlashSaleProducts);
+router.get("/new", productController.getNewProducts);
+router.get("/bestseller", productController.getBestsellerProducts);
 
 // Get all products
 router.get("/", productController.getProducts);
