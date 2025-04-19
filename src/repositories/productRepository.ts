@@ -29,10 +29,12 @@ export const findAll = async (query: GetProductsQuery) => {
     .select(
       "products.*",
       db.raw("authors.name as author_name"),
-      db.raw("publishers.name as publisher_name")
+      db.raw("publishers.name as publisher_name"),
+      db.raw("categories.name as category_name")
     )
     .leftJoin("authors", "products.author_id", "authors.id")
-    .leftJoin("publishers", "products.publisher_id", "publishers.id");
+    .leftJoin("publishers", "products.publisher_id", "publishers.id")
+    .leftJoin("categories", "products.publisher_id", "categories.id");
 
   // Apply filters
   if (categoryId) {
