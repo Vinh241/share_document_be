@@ -13,6 +13,7 @@ export const getProducts = async (
   next: NextFunction
 ) => {
   try {
+    console.log("req.query", req.query);
     const query: GetProductsQuery = {
       page: req.query.page ? Number(req.query.page) : 1,
       limit: req.query.limit ? Number(req.query.limit) : 10,
@@ -28,6 +29,9 @@ export const getProducts = async (
       minPrice: req.query.minPrice ? Number(req.query.minPrice) : undefined,
       maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : undefined,
       search: req.query.search as string,
+      publisherIds: req.query.publisherIds
+        ? (req.query.publisherIds as string[]).map(Number)
+        : undefined,
     };
 
     const products = await productService.getProducts(query);

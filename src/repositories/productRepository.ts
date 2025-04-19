@@ -12,6 +12,7 @@ export const findAll = async (query: GetProductsQuery) => {
     sortOrder = "desc",
     categoryId,
     publisherId,
+    publisherIds, // Add support for array of publisher IDs
     authorId,
     minPrice,
     maxPrice,
@@ -37,9 +38,16 @@ export const findAll = async (query: GetProductsQuery) => {
   if (categoryId) {
     dbQuery.where("products.category_id", categoryId);
   }
-  if (publisherId) {
+  console.log("query", query);
+  console.log("pipeline", publisherId, publisherIds);
+
+  // Handle publisherIds array or single publisherId
+  if (publisherIds && Array.isArray(publisherIds) && publisherIds.length > 0) {
+    dbQuery.whereIn("products.publisher_id", publisherIds);
+  } else if (publisherId) {
     dbQuery.where("products.publisher_id", publisherId);
   }
+
   if (authorId) {
     dbQuery.where("products.author_id", authorId);
   }

@@ -26,18 +26,18 @@ export interface DatabaseConfig {
 }
 
 export interface GetProductsQuery {
-  page?: number;
-  limit?: number;
+  page?: number | string;
+  limit?: number | string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  categoryId?: number;
-  publisherId?: number;
-  authorId?: number;
+  categoryId?: number | string;
+  publisherId?: number | string;
+  publisherIds?: (number | string)[]; // Add this line
+  authorId?: number | string;
   minPrice?: number;
   maxPrice?: number;
   search?: string;
 }
-
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {
