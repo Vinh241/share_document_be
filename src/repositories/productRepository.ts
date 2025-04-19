@@ -60,6 +60,9 @@ export const findAll = async (query: GetProductsQuery) => {
   // Clone the query for count
   const countQuery = dbQuery.clone();
 
+  // Fix: Clear the select clause and only count
+  countQuery.clearSelect().count({ count: "*" });
+
   // Apply sorting and pagination
   const products = await dbQuery
     .orderBy(`products.${sortBy}`, sortOrder)
@@ -67,7 +70,7 @@ export const findAll = async (query: GetProductsQuery) => {
     .offset(offset);
 
   // Get total count
-  const [{ count }] = await countQuery.count({ count: "*" });
+  const [{ count }] = await countQuery;
 
   return {
     products,
@@ -151,7 +154,7 @@ export const findFlashSaleProducts = async (
     .limit(limit)
     .offset(offset);
 
-  // Build query for count
+  // Build query for count - modified to use a simpler count query
   const countQuery = db("products")
     .whereNotNull("sale_price")
     .count({ count: "*" });
