@@ -239,3 +239,28 @@ export const getProductReviews = async (
     next(error);
   }
 };
+
+/**
+ * Get products by IDs
+ */
+export const getProductsByIds = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new AppError("Invalid product IDs", 400);
+    }
+
+    const products = await productService.getProductsByIds(ids);
+    res.json({
+      status: "success",
+      data: products,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

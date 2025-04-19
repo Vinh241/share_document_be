@@ -124,3 +124,10 @@ export const getBestsellerProducts = async (
     },
   };
 };
+
+/**
+ * Get products by IDs
+ */
+export const getProductsByIds = async (ids: number[]): Promise<Product[]> => {
+  return productRepository.findByIds(ids);
+};

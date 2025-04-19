@@ -245,3 +245,10 @@ export const findBestsellerProducts = async (
     total: Number(count),
   };
 };
+
+/**
+ * Find products by IDs
+ */
+export const findByIds = async (ids: number[]): Promise<Product[]> => {
+  return db("products").whereIn("id", ids);
+};
