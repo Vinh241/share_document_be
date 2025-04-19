@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { GetProductsQuery } from "../types";
 import * as productService from "../services/productService";
+import * as reviewService from "../services/reviewService";
 import { AppError } from "../middleware/errorHandler";
 
 /**
@@ -55,7 +56,13 @@ export const getProductById = async (
       throw new AppError("Product not found", 404);
     }
 
-    res.json(product);
+    // Get product reviews
+    const reviews = await reviewService.getProductReviews(productId);
+
+    res.json({
+      ...product,
+      reviews,
+    });
   } catch (error) {
     next(error);
   }
@@ -189,6 +196,41 @@ export const getBestsellerProducts = async (
     const limit = req.query.limit ? Number(req.query.limit) : 10;
     const products = await productService.getBestsellerProducts(page, limit);
     res.json(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get product reviews
+ */
+export const getProductReviews = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const productId = Number(req.params.id);
+    if (isNaN(productId)) {
+      throw new AppError("Invalid product ID", 400);
+    }
+
+    const product = await productService.getProductById(productId);
+    if (!product) {
+      throw new AppError("Product not found", 404);
+    }
+
+    const reviews = await reviewService.getProductReviews(productId);
+    const averageRating = await reviewService.getProductAverageRating(
+      productId
+    );
+    const reviewCount = await reviewService.getProductReviewCount(productId);
+
+    res.json({
+      reviews,
+      average_rating: averageRating,
+      review_count: reviewCount,
+    });
   } catch (error) {
     next(error);
   }

@@ -79,18 +79,22 @@ export const findAll = async (query: GetProductsQuery) => {
  * Find product by ID
  */
 export const findById = async (id: number): Promise<Product | null> => {
-  return (
-    db("products")
-      .select(
-        "products.*",
-        db.raw("authors.name as author_name"),
-        db.raw("publishers.name as publisher_name")
-      )
-      .leftJoin("authors", "products.author_id", "authors.id")
-      .leftJoin("publishers", "products.publisher_id", "publishers.id")
-      .where("products.id", id)
-      .first() || null
-  );
+  const product = await db("products")
+    .select(
+      "products.*",
+      db.raw("authors.name as author_name"),
+      db.raw("publishers.name as publisher_name"),
+      db.raw("COALESCE(AVG(reviews.rating), 0) as average_rating"),
+      db.raw("COUNT(DISTINCT reviews.id) as review_count")
+    )
+    .leftJoin("authors", "products.author_id", "authors.id")
+    .leftJoin("publishers", "products.publisher_id", "publishers.id")
+    .leftJoin("reviews", "products.id", "reviews.product_id")
+    .where("products.id", id)
+    .groupBy("products.id", "authors.name", "publishers.name")
+    .first();
+
+  return product || null;
 };
 
 /**

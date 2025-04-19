@@ -114,6 +114,8 @@ export interface Product {
   publication_date?: Date;
   created_at: Date;
   updated_at: Date;
+  average_rating?: number;
+  review_count?: number;
 }
 
 export interface ProductImage {
@@ -168,6 +170,7 @@ export interface Review {
   comment?: string;
   created_at: Date;
   updated_at: Date;
+  user_name?: string;
 }
 
 export interface CartItem {

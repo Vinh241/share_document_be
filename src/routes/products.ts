@@ -14,6 +14,9 @@ router.get("/", productController.getProducts);
 // Get product by ID
 router.get("/:id", productController.getProductById);
 
+// Get product reviews
+router.get("/:id/reviews", productController.getProductReviews);
+
 // Create a new product
 router.post("/", productController.createProduct);
 
