@@ -5,14 +5,7 @@ VALUES
   ('john@example.com', '+12345678901', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'John Doe'),  -- password: admin123
   ('jane@example.com', '+13456789012', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'Jane Smith');  -- password: admin123
 
--- Insert addresses
-INSERT INTO addresses (user_id, address_line1, address_line2, city, state, postal_code, is_default)
-VALUES
-  (1, '123 Admin St', 'Suite 100', 'Admin City', 'AC', '12345', true),
-  (2, '456 Main St', 'Apt 201', 'New York', 'NY', '10001', true),
-  (2, '789 Work Ave', NULL, 'New York', 'NY', '10002', false),
-  (3, '987 First St', NULL, 'Los Angeles', 'CA', '90001', true);
--- 
+
 -- Insert categories
 INSERT INTO categories (name, slug, parent_id)
 VALUES
@@ -62,11 +55,11 @@ VALUES
   (5, 'https://example.com/images/becoming-1.jpg', true);
 
 -- Insert orders
-INSERT INTO orders (user_id, status, total_amount, shipping_address_id, payment_method, payment_status)
+INSERT INTO orders (user_id, status, total_amount, shipping_address, payment_method, payment_status)
 VALUES
-  (2, 'delivered', 28.98, 2, 'credit_card', 'completed'),
-  (3, 'processing', 24.99, 4, 'paypal', 'completed'),
-  (2, 'pending', 14.99, 2, 'credit_card', 'pending');
+  (2, 'delivered', 28.98, 'hanoi', 'credit_card', 'completed'),
+  (3, 'processing', 24.99, 'hanoi', 'paypal', 'completed'),
+  (2, 'pending', 14.99, 'hanoi', 'credit_card', 'pending');
 
 -- Insert order items
 INSERT INTO order_items (order_id, product_id, quantity, unit_price)

@@ -138,14 +138,15 @@ export type PaymentMethod =
   | "credit_card"
   | "paypal"
   | "bank_transfer"
-  | "cash_on_delivery";
+  | "cash_on_delivery"
+  | "momo";
 
 export interface Order {
   id: number;
   user_id: number;
   status: OrderStatus;
   total_amount: number;
-  shipping_address_id: number;
+  shipping_address: string;
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
   created_at: Date;

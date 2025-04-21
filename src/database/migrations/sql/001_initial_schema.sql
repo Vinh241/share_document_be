@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS authors;
 DROP TABLE IF EXISTS publishers;
 DROP TABLE IF EXISTS categories;
-DROP TABLE IF EXISTS addresses;
+-- DROP TABLE IF EXISTS addresses;
 DROP TABLE IF EXISTS users;
 
 -- Drop existing ENUM types
@@ -24,7 +24,7 @@ DROP TYPE IF EXISTS payment_method;
 CREATE TYPE user_status AS ENUM ('active', 'inactive', 'pending');
 CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled');
 CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed', 'refunded');
-CREATE TYPE payment_method AS ENUM ('credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery');
+CREATE TYPE payment_method AS ENUM ('credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery','momo');
 CREATE TYPE referral_status AS ENUM ('pending', 'approved', 'rejected');
 CREATE TYPE transaction_status AS ENUM ('pending', 'completed', 'failed');
 CREATE TYPE transaction_type AS ENUM ('payment', 'refund', 'withdrawal', 'deposit');
@@ -41,18 +41,18 @@ CREATE TABLE users (
 );
 
 -- Create addresses table
-CREATE TABLE addresses (
-  id BIGSERIAL PRIMARY KEY,
-  user_id BIGINT REFERENCES users(id),
-  address_line1 VARCHAR(255) NOT NULL,
-  address_line2 VARCHAR(255),
-  city VARCHAR(100) NOT NULL,
-  state VARCHAR(100) NOT NULL,
-  postal_code VARCHAR(20) NOT NULL,
-  is_default BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- CREATE TABLE addresses (
+--   id BIGSERIAL PRIMARY KEY,
+--   user_id BIGINT REFERENCES users(id),
+--   address_line1 VARCHAR(255) NOT NULL,
+--   address_line2 VARCHAR(255),
+--   city VARCHAR(100) NOT NULL,
+--   state VARCHAR(100) NOT NULL,
+--   postal_code VARCHAR(20) NOT NULL,
+--   is_default BOOLEAN DEFAULT FALSE,
+--   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 -- Create categories table
 CREATE TABLE categories (
@@ -117,7 +117,7 @@ CREATE TABLE orders (
   user_id BIGINT REFERENCES users(id),
   status order_status DEFAULT 'pending',
   total_amount DECIMAL(10,2) NOT NULL,
-  shipping_address_id BIGINT REFERENCES addresses(id),
+  shipping_address VARCHAR(255),
   payment_method payment_method NOT NULL,
   payment_status payment_status DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
