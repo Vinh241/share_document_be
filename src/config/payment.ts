@@ -10,7 +10,7 @@ export const momoConfig = {
     process.env.MOMO_API_ENDPOINT ||
     "https://test-payment.momo.vn/v2/gateway/api/create",
   returnUrl:
-    process.env.MOMO_RETURN_URL || "http://localhost:5173/payment/momo-return",
+    process.env.MOMO_RETURN_URL || "http://localhost:5173/payment-result",
   notifyUrl:
     process.env.MOMO_NOTIFY_URL ||
     "http://localhost:3000/api/payments/momo/notify",

@@ -83,3 +83,10 @@ VALUES
   (2, 2, 1),
   (2, 4, 1),
   (3, 1, 2); 
+
+-- Insert payment_details
+INSERT INTO payment_details (order_id, provider, transaction_id, amount, payment_data)
+VALUES
+  (1, 'credit_card', 'TXN123456789', 28.98, '{"card_type": "Visa", "last_four": "4242", "customer_name": "John Doe"}'),
+  (2, 'paypal', 'PAYPAL87654321', 24.99, '{"paypal_email": "jane@example.com", "payment_id": "PAY-87654321"}'),
+  (3, 'momo', 'MOMO345678912', 14.99, '{"phone_number": "+12345678901", "wallet_id": "WALLET-3456789"}'); 

@@ -31,7 +31,8 @@ export const createMomoPayment = async (req: Request, res: Response) => {
       Number(amount),
       orderInfo || `Thanh toán đơn hàng #${order.id}`
     );
-
+    console.log("order", order.id);
+    console.log("payment", paymentResult);
     return res.status(200).json({
       success: true,
       data: {
@@ -137,7 +138,27 @@ export const getPaymentStatus = async (req: Request, res: Response) => {
       });
     }
 
-    const order = await orderRepository.getOrderById(Number(orderId));
+    // Check if orderId is a valid number, or extract numeric part if it contains an underscore
+    let orderIdNumber: number;
+
+    if (orderId.includes("_")) {
+      // If orderId contains an underscore (like in MoMo transactions),
+      // try to use the part after the underscore as an order ID
+      const parts = orderId.split("_");
+      orderIdNumber = Number(parts[parts.length - 1]);
+    } else {
+      orderIdNumber = Number(orderId);
+    }
+
+    // Check if orderIdNumber is a valid number
+    if (isNaN(orderIdNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order ID format",
+      });
+    }
+
+    const order = await orderRepository.getOrderById(orderIdNumber);
 
     if (!order) {
       return res.status(404).json({

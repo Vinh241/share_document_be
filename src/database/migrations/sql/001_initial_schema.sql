@@ -2,6 +2,7 @@
 DROP TABLE IF EXISTS cart_items;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS payment_details;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS product_images;
 DROP TABLE IF EXISTS products;
@@ -152,6 +153,18 @@ CREATE TABLE cart_items (
   user_id BIGINT REFERENCES users(id),
   product_id BIGINT REFERENCES products(id),
   quantity INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create payment_details table
+CREATE TABLE payment_details (
+  id BIGSERIAL PRIMARY KEY,
+  order_id BIGINT REFERENCES orders(id),
+  provider VARCHAR(255) NOT NULL,
+  transaction_id VARCHAR(255) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  payment_data JSONB,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
