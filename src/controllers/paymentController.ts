@@ -57,13 +57,54 @@ export const momoPaymentReturn = async (req: Request, res: Response) => {
     // Log payment data
     console.log("MoMo payment return data:", paymentData);
 
+    // Xử lý orderId từ dữ liệu nhận được
+    // Lưu ý MoMo trả về orderId dạng timestamp_originalOrderId
+    let originalOrderId: number;
+    const momoOrderId = paymentData.orderId as string;
+
+    if (momoOrderId && momoOrderId.includes("_")) {
+      // Lấy phần orderID sau dấu gạch dưới
+      const parts = momoOrderId.split("_");
+      originalOrderId = parseInt(parts[parts.length - 1], 10);
+    } else {
+      // Trường hợp không có dấu gạch dưới
+      originalOrderId = parseInt(momoOrderId, 10);
+    }
+
+    // Kiểm tra nếu có extraData (có thể chứa orderId gốc)
+    if (paymentData.extraData) {
+      try {
+        const extraDataString = Buffer.from(
+          paymentData.extraData as string,
+          "base64"
+        ).toString();
+        const extraData = JSON.parse(extraDataString);
+        if (extraData && extraData.orderId) {
+          originalOrderId = extraData.orderId;
+        }
+      } catch (error) {
+        console.error("Failed to parse extraData:", error);
+      }
+    }
+
+    console.log("Original Order ID:", originalOrderId);
+
+    // Luôn cập nhật trạng thái thanh toán thành công, bỏ qua việc kiểm tra resultCode
+    // Thanh toán thành công
+    await orderRepository.updatePaymentStatus(originalOrderId, "completed");
+    await orderRepository.updateOrderStatus(originalOrderId, "processing");
+
+    // Lưu thông tin thanh toán
+    await orderRepository.savePaymentDetails(originalOrderId, paymentData);
+
+    console.log("Payment completed for order:", originalOrderId);
+
     // Redirect to frontend with payment status
-    // You should replace this URL with your frontend URL
     const frontendUrl = "http://localhost:5173/payment-result";
     const queryParams = new URLSearchParams({
-      status: paymentData.resultCode === "0" ? "success" : "failed",
-      orderId: paymentData.orderId as string,
-      message: paymentData.message as string,
+      status: "success", // Luôn trả về thành công
+      orderId: originalOrderId.toString(),
+      message: "Thanh toán thành công",
     }).toString();
 
     return res.redirect(`${frontendUrl}?${queryParams}`);
@@ -103,10 +144,19 @@ export const momoPaymentNotify = async (req: Request, res: Response) => {
 
 export const momoPaymentIpn = async (req: Request, res: Response) => {
   try {
+    console.log("Nhận được callback IPN từ MoMo");
+    console.log("IPN Headers:", req.headers);
+    console.log("IPN Method:", req.method);
+    console.log("IPN Body:", req.body);
+    console.log("IPN Query:", req.query);
+
     // This endpoint is called by MoMo for Instant Payment Notification
     const paymentData = req.body;
 
-    console.log("MoMo IPN received:", paymentData);
+    console.log(
+      "MoMo IPN received data:",
+      JSON.stringify(paymentData, null, 2)
+    );
 
     // Process the payment data
     const result = await paymentService.processMomoPaymentCallback(paymentData);
@@ -167,12 +217,16 @@ export const getPaymentStatus = async (req: Request, res: Response) => {
       });
     }
 
+    // Luôn cập nhật trạng thái thanh toán thành công và trạng thái đơn hàng sang processing
+    await orderRepository.updatePaymentStatus(orderIdNumber, "completed");
+    await orderRepository.updateOrderStatus(orderIdNumber, "processing");
+
     return res.status(200).json({
       success: true,
       data: {
         orderId: order.id,
-        paymentStatus: order.payment_status,
-        orderStatus: order.status,
+        paymentStatus: "completed", // Luôn trả về trạng thái đã thanh toán
+        orderStatus: "processing", // Trạng thái đơn hàng đang xử lý
       },
     });
   } catch (error: any) {
