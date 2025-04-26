@@ -4,6 +4,7 @@ import categoriesRoutes from "./categories";
 import publisherRoutes from "./publishers";
 import paymentsRoutes from "./payments";
 import authRoutes from "./auth";
+import ordersRoutes from "./orders";
 const router = Router();
 
 // Mount routes
@@ -29,4 +30,5 @@ router.use("/categories", categoriesRoutes);
 router.use("/publishers", publisherRoutes);
 router.use("/payments", paymentsRoutes);
 router.use("/auth", authRoutes);
+router.use("/orders", ordersRoutes);
 export default router;
