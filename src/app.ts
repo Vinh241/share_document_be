@@ -4,11 +4,17 @@ import helmet from "helmet";
 import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
 import config from "./config";
+import path from "path";
 
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Disable CSP for development
+    crossOriginResourcePolicy: false, // Allow loading resources from different origins
+  })
+);
 app.use(
   cors({
     origin: config.cors.origins,
@@ -16,6 +22,11 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Serve static files from the public directory
+const publicPath = path.join(__dirname, "../public");
+console.log(`Serving static files from: ${publicPath}`);
+app.use(express.static(publicPath));
 
 // Routes
 app.use("/api", routes);

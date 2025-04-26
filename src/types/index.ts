@@ -118,6 +118,7 @@ export interface Product {
   updated_at: Date;
   average_rating?: number;
   review_count?: number;
+  images?: ProductImage[];
 }
 
 export interface ProductImage {

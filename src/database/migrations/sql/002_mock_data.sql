@@ -1,9 +1,9 @@
 -- Insert users
-INSERT INTO users (email, phone_number, password_hash, full_name) 
+INSERT INTO users (email, phone_number, password_hash, full_name, is_admin) 
 VALUES 
-  ('admin@bookstore.com', '+11234567890', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'Admin User'),  -- password: admin123
-  ('john@example.com', '+12345678901', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'John Doe'),  -- password: admin123
-  ('jane@example.com', '+13456789012', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'Jane Smith');  -- password: admin123
+  ('admin@bookstore.com', '+11234567890', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'Admin User', TRUE),  -- password: admin123
+  ('john@example.com', '+12345678901', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'John Doe', FALSE),  -- password: admin123
+  ('jane@example.com', '+13456789012', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'Jane Smith', FALSE);  -- password: admin123
 
 
 -- Insert categories
@@ -47,12 +47,12 @@ VALUES
 -- Insert product images
 INSERT INTO product_images (product_id, image_url, is_primary)
 VALUES
-  (1, 'https://example.com/images/harry-potter-1.jpg', true),
-  (1, 'https://example.com/images/harry-potter-2.jpg', false),
-  (2, 'https://example.com/images/the-shining-1.jpg', true),
-  (3, 'https://example.com/images/pride-prejudice-1.jpg', true),
-  (4, 'https://example.com/images/1984-1.jpg', true),
-  (5, 'https://example.com/images/becoming-1.jpg', true);
+  (1, '/uploads/products/harry-potter-1.jpg', true),
+  (1, '/uploads/products/harry-potter-2.jpg', false),
+  (2, '/uploads/products/the-shining-1.jpg', true),
+  (3, '/uploads/products/pride-prejudice-1.jpg', true),
+  (4, '/uploads/products/1984-1.jpg', true),
+  (5, '/uploads/products/becoming-1.jpg', true);
 
 -- Insert orders
 INSERT INTO orders (user_id, status, total_amount, shipping_address, payment_method, payment_status)

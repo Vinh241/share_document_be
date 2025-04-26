@@ -82,8 +82,11 @@ export const findAll = async (query: GetProductsQuery) => {
   // Get total count
   const [{ count }] = await countQuery;
 
+  // Add images to products
+  const productsWithImages = await addImagesToProducts(products);
+
   return {
-    products,
+    products: productsWithImages,
     total: Number(count),
   };
 };
@@ -106,6 +109,16 @@ export const findById = async (id: number): Promise<Product | null> => {
     .where("products.id", id)
     .groupBy("products.id", "authors.name", "publishers.name")
     .first();
+
+  if (product) {
+    // Get product images
+    const images = await db("product_images")
+      .select("*")
+      .where("product_id", id)
+      .orderBy("is_primary", "desc");
+
+    product.images = images;
+  }
 
   return product || null;
 };
@@ -141,6 +154,35 @@ export const remove = async (id: number): Promise<boolean> => {
   return deleted > 0;
 };
 
+// Helper function to add images to products
+async function addImagesToProducts(products: any[]): Promise<any[]> {
+  if (products.length === 0) return products;
+
+  // Get all product IDs
+  const productIds = products.map((product) => product.id);
+
+  // Fetch all images for these products in a single query
+  const images = await db("product_images")
+    .select("*")
+    .whereIn("product_id", productIds)
+    .orderBy("is_primary", "desc");
+
+  // Create a map of product_id -> images[]
+  const imagesByProductId = images.reduce((map, image) => {
+    if (!map[image.product_id]) {
+      map[image.product_id] = [];
+    }
+    map[image.product_id].push(image);
+    return map;
+  }, {});
+
+  // Add images to each product
+  return products.map((product) => ({
+    ...product,
+    images: imagesByProductId[product.id] || [],
+  }));
+}
+
 /**
  * Find flash sale products (products with sale_price, ordered by lowest price)
  */
@@ -173,8 +215,11 @@ export const findFlashSaleProducts = async (
   const products = await productsQuery;
   const [{ count }] = await countQuery;
 
+  // Add images to products
+  const productsWithImages = await addImagesToProducts(products);
+
   return {
-    products,
+    products: productsWithImages,
     total: Number(count),
   };
 };
@@ -205,8 +250,11 @@ export const findNewProducts = async (page: number = 1, limit: number = 5) => {
   const products = await productsQuery;
   const [{ count }] = await countQuery;
 
+  // Add images to products
+  const productsWithImages = await addImagesToProducts(products);
+
   return {
-    products,
+    products: productsWithImages,
     total: Number(count),
   };
 };
@@ -240,8 +288,11 @@ export const findBestsellerProducts = async (
   const products = await productsQuery;
   const [{ count }] = await countQuery;
 
+  // Add images to products
+  const productsWithImages = await addImagesToProducts(products);
+
   return {
-    products,
+    products: productsWithImages,
     total: Number(count),
   };
 };
