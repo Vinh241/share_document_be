@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { Config } from "../types";
+import { Secret } from "jsonwebtoken";
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ const config: Config = {
     database: process.env.DB_NAME || "bookstore",
   },
   jwt: {
-    secret: process.env.JWT_SECRET || "your-secret-key",
+    secret: (process.env.JWT_SECRET || "your-secret-key") as Secret,
     expiresIn: process.env.JWT_EXPIRES_IN || "24h",
   },
   cors: {

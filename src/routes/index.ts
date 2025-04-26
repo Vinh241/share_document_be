@@ -3,6 +3,7 @@ import productsRoutes from "./products";
 import categoriesRoutes from "./categories";
 import publisherRoutes from "./publishers";
 import paymentsRoutes from "./payments";
+import authRoutes from "./auth";
 const router = Router();
 
 // Mount routes
@@ -27,4 +28,5 @@ router.use("/products", productsRoutes);
 router.use("/categories", categoriesRoutes);
 router.use("/publishers", publisherRoutes);
 router.use("/payments", paymentsRoutes);
+router.use("/auth", authRoutes);
 export default router;

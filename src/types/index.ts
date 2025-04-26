@@ -1,3 +1,5 @@
+import { Secret } from "jsonwebtoken";
+
 export interface Config {
   port: number;
   database: {
@@ -8,7 +10,7 @@ export interface Config {
     database: string;
   };
   jwt: {
-    secret: string;
+    secret: Secret;
     expiresIn: string;
   };
   cors: {
