@@ -7,6 +7,9 @@ const router = Router();
 // Protect all order routes with authentication
 router.use(authenticate);
 
+// Create a new order
+router.post("/", orderController.createOrder);
+
 // Get user's order history
 router.get("/", orderController.getUserOrders);
 

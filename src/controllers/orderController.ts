@@ -1,7 +1,43 @@
 import { Request, Response, NextFunction } from "express";
 import * as orderRepository from "../repositories/orderRepository";
+import * as orderService from "../services/orderService";
 
 class OrderController {
+  // Create a new order
+  createOrder = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> => {
+    try {
+      if (!req.userId) {
+        return res.status(401).json({
+          status: "error",
+          message: "Unauthorized",
+        });
+      }
+
+      // Ensure user_id is set in the order data
+      const orderData = {
+        ...req.body,
+        user_id: req.body.user_id || req.userId,
+      };
+
+      // Create the order
+      const order = await orderService.createOrder(orderData);
+
+      return res.status(201).json({
+        success: true,
+        data: {
+          orderId: order.id,
+        },
+        message: "Order created successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   // Get order history for authenticated user
   getUserOrders = async (
     req: Request,

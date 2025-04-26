@@ -17,6 +17,7 @@ export const createMomoPayment = async (req: Request, res: Response) => {
     // Tạo đơn hàng trước với trạng thái pending và payment_status pending
     const orderCreateData = {
       ...orderData,
+      user_id: orderData.user_id || req.userId,
       status: "pending",
       payment_status: "pending",
       payment_method: "momo",

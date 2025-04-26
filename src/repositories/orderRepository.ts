@@ -6,7 +6,7 @@ export const createOrder = async (
 ) => {
   console.log("orderData", orderData);
   const dataInsert = {
-    // user_id BIGINT REFERENCES users(id),
+    user_id: orderData.user_id,
     total_amount: orderData.total_amount,
     shipping_address: orderData.shipping_address,
     payment_method: orderData.payment_method,
