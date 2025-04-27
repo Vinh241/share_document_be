@@ -301,5 +301,19 @@ export const findBestsellerProducts = async (
  * Find products by IDs
  */
 export const findByIds = async (ids: number[]): Promise<Product[]> => {
-  return db("products").whereIn("id", ids);
+  // Build query for products with author and publisher join
+  const products = await db("products")
+    .select(
+      "products.*",
+      db.raw("authors.name as author_name"),
+      db.raw("publishers.name as publisher_name"),
+      db.raw("categories.name as category_name")
+    )
+    .leftJoin("authors", "products.author_id", "authors.id")
+    .leftJoin("publishers", "products.publisher_id", "publishers.id")
+    .leftJoin("categories", "products.category_id", "categories.id")
+    .whereIn("products.id", ids);
+
+  // Add images to products
+  return addImagesToProducts(products);
 };
