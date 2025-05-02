@@ -221,11 +221,13 @@ class AdminController {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
 
       const products = await db("products")
+        .join("categories", "products.category_id", "=", "categories.id")
         .select(
           "products.id",
           "products.name",
           "products.price",
-          "products.quantity_sold"
+          "products.quantity_sold",
+          "categories.name as category_name"
         )
         .orderBy("products.quantity_sold", "desc")
         .limit(limit);
@@ -434,6 +436,79 @@ class AdminController {
             items: orderItems,
             payment_details: paymentDetails || null,
           },
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Get sales by category
+   */
+  getSalesByCategory = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> => {
+    try {
+      if (!req.userId || !req.isAdmin) {
+        return res.status(403).json({
+          status: "error",
+          message: "Forbidden - Admin access required",
+        });
+      }
+
+      const { startDate, endDate } = req.query;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+
+      // Default to last 30 days if no dates provided
+      const end = endDate ? new Date(endDate as string) : new Date();
+      const start = startDate
+        ? new Date(startDate as string)
+        : new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      // Format dates for database query
+      const formattedStartDate = start.toISOString().split("T")[0];
+      const formattedEndDate = end.toISOString().split("T")[0];
+
+      // Query sales by category
+      const salesByCategory = await db("order_items")
+        .join("orders", "order_items.order_id", "=", "orders.id")
+        .join("products", "order_items.product_id", "=", "products.id")
+        .join("categories", "products.category_id", "=", "categories.id")
+        .select(
+          "categories.id as category_id",
+          "categories.name as name",
+          db.raw("SUM(order_items.unit_price * order_items.quantity) as amount")
+        )
+        .where("orders.status", "!=", "cancelled")
+        .where("orders.created_at", ">=", formattedStartDate)
+        .where("orders.created_at", "<=", formattedEndDate + " 23:59:59")
+        .groupBy("categories.id", "categories.name")
+        .orderBy("amount", "desc")
+        .limit(limit);
+
+      // Calculate total sales amount to get percentages
+      const totalSales = salesByCategory.reduce(
+        (sum, category) => sum + parseFloat(category.amount),
+        0
+      );
+
+      // Add percentage to each category
+      const categoriesWithPercentage = salesByCategory.map((category) => ({
+        ...category,
+        percentage:
+          totalSales > 0
+            ? Math.round((parseFloat(category.amount) / totalSales) * 100)
+            : 0,
+      }));
+
+      return res.json({
+        status: "success",
+        data: {
+          salesByCategory: categoriesWithPercentage,
+          totalSales,
         },
       });
     } catch (error) {

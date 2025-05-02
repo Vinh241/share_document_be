@@ -17,6 +17,7 @@ router.get(
   adminController.getBestsellingProducts
 );
 router.get("/dashboard/sales-by-date", adminController.getSalesByDate);
+router.get("/dashboard/sales-by-category", adminController.getSalesByCategory);
 
 // Orders routes
 router.get("/orders", adminController.getAllOrders);
