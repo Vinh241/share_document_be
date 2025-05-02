@@ -109,16 +109,25 @@ export interface Product {
   quantity_sold: number;
   category_id?: number;
   publisher_id?: number;
-  publisher_name?: string;
   author_id?: number;
-  author_name?: string;
   isbn?: string;
   publication_date?: Date;
   created_at: Date;
   updated_at: Date;
-  average_rating?: number;
-  review_count?: number;
+
+  // Fields that might be joined from other tables
+  author_name?: string;
+  publisher_name?: string;
+  category_name?: string;
+
+  // Used for image handling
   images?: ProductImage[];
+  product_images?:
+    | ProductImage[]
+    | {
+        image_url: string;
+        is_primary: boolean;
+      }[];
 }
 
 export interface ProductImage {

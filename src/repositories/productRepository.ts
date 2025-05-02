@@ -127,8 +127,53 @@ export const findById = async (id: number): Promise<Product | null> => {
  * Create a new product
  */
 export const create = async (product: Partial<Product>): Promise<Product> => {
-  const [newProduct] = await db("products").insert(product).returning("*");
-  return newProduct;
+  // Extract product_images array from the product data if it exists
+  const { product_images, ...productData } = product as Partial<Product> & {
+    product_images?: Array<{ image_url: string; is_primary: boolean }>;
+  };
+
+  // Begin a transaction
+  const trx = await db.transaction();
+
+  try {
+    // Insert product and get the new product ID
+    const [newProduct] = await trx("products")
+      .insert(productData)
+      .returning("*");
+
+    // If product_images array is provided, insert them
+    if (
+      product_images &&
+      Array.isArray(product_images) &&
+      product_images.length > 0
+    ) {
+      // Prepare image data for insertion
+      const imagesData = product_images.map((image) => ({
+        product_id: newProduct.id,
+        image_url: image.image_url,
+        is_primary: image.is_primary || false,
+      }));
+
+      // Insert all images
+      await trx("product_images").insert(imagesData);
+    }
+
+    // Commit transaction
+    await trx.commit();
+
+    // Get complete product with images
+    const completeProduct = await findById(newProduct.id);
+    if (!completeProduct) {
+      throw new Error(
+        `Could not find product after creation with ID: ${newProduct.id}`
+      );
+    }
+    return completeProduct;
+  } catch (error) {
+    // Rollback transaction on error
+    await trx.rollback();
+    throw error;
+  }
 };
 
 /**
@@ -138,20 +183,95 @@ export const update = async (
   id: number,
   data: Partial<Product>
 ): Promise<Product | null> => {
-  const [updatedProduct] = await db("products")
-    .where("id", id)
-    .update(data)
-    .returning("*");
+  // Extract product_images array from the data if it exists
+  const { product_images, ...productData } = data as Partial<Product> & {
+    product_images?: Array<{ image_url: string; is_primary: boolean }>;
+  };
 
-  return updatedProduct || null;
+  // Begin a transaction
+  const trx = await db.transaction();
+
+  try {
+    // Update product data
+    const [updatedProduct] = await trx("products")
+      .where("id", id)
+      .update(productData)
+      .returning("*");
+
+    // If no product found, return null
+    if (!updatedProduct) {
+      await trx.rollback();
+      return null;
+    }
+
+    // If product_images array is provided, handle image updates
+    if (
+      product_images &&
+      Array.isArray(product_images) &&
+      product_images.length > 0
+    ) {
+      // First, delete existing images if we're replacing them
+      await trx("product_images").where("product_id", id).delete();
+
+      // Prepare image data for insertion
+      const imagesData = product_images.map((image) => ({
+        product_id: id,
+        image_url: image.image_url,
+        is_primary: image.is_primary || false,
+      }));
+
+      // Insert all new images
+      await trx("product_images").insert(imagesData);
+    }
+
+    // Commit transaction
+    await trx.commit();
+
+    // Get complete product with updated images
+    return await findById(id);
+  } catch (error) {
+    // Rollback transaction on error
+    await trx.rollback();
+    throw error;
+  }
 };
 
 /**
  * Delete a product
  */
 export const remove = async (id: number): Promise<boolean> => {
-  const deleted = await db("products").where("id", id).delete();
-  return deleted > 0;
+  // Begin a transaction
+  const trx = await db.transaction();
+
+  try {
+    // Xóa các bản ghi liên quan trong các bảng con
+    // 1. Xóa khỏi giỏ hàng
+    await trx("cart_items").where("product_id", id).delete();
+
+    // 2. Xóa các đánh giá của sản phẩm
+    await trx("reviews").where("product_id", id).delete();
+
+    // 3. Xóa các mục trong đơn hàng
+    // Lưu ý: Nếu đơn hàng đã tồn tại, chúng ta có thể giữ lại thông tin sản phẩm trong order_items
+    // Trong trường hợp thực tế, chúng ta thường không xóa order_items
+    // Nhưng để giải quyết vấn đề khóa ngoại, chúng ta sẽ xóa chúng
+    await trx("order_items").where("product_id", id).delete();
+
+    // 4. Xóa các ảnh sản phẩm
+    await trx("product_images").where("product_id", id).delete();
+
+    // 5. Cuối cùng xóa sản phẩm
+    const deleted = await trx("products").where("id", id).delete();
+
+    // Commit transaction nếu mọi thứ thành công
+    await trx.commit();
+
+    return deleted > 0;
+  } catch (error) {
+    // Rollback transaction nếu có lỗi
+    await trx.rollback();
+    throw error;
+  }
 };
 
 // Helper function to add images to products

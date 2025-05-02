@@ -6,6 +6,8 @@ import paymentsRoutes from "./payments";
 import authRoutes from "./auth";
 import ordersRoutes from "./orders";
 import adminRoutes from "./admin";
+import uploadsRoutes from "./uploads";
+
 const router = Router();
 
 // Mount routes
@@ -33,4 +35,6 @@ router.use("/payments", paymentsRoutes);
 router.use("/auth", authRoutes);
 router.use("/orders", ordersRoutes);
 router.use("/admin", adminRoutes);
+router.use("/upload", uploadsRoutes);
+
 export default router;
