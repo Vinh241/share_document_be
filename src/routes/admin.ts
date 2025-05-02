@@ -18,4 +18,9 @@ router.get(
 );
 router.get("/dashboard/sales-by-date", adminController.getSalesByDate);
 
+// Orders routes
+router.get("/orders", adminController.getAllOrders);
+router.get("/orders/:id", adminController.getOrderDetails);
+router.patch("/orders/:id", adminController.updateOrderStatus);
+
 export default router;
