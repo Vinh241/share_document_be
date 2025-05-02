@@ -5,6 +5,7 @@ import publisherRoutes from "./publishers";
 import paymentsRoutes from "./payments";
 import authRoutes from "./auth";
 import ordersRoutes from "./orders";
+import adminRoutes from "./admin";
 const router = Router();
 
 // Mount routes
@@ -31,4 +32,5 @@ router.use("/publishers", publisherRoutes);
 router.use("/payments", paymentsRoutes);
 router.use("/auth", authRoutes);
 router.use("/orders", ordersRoutes);
+router.use("/admin", adminRoutes);
 export default router;

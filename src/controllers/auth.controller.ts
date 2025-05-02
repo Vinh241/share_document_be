@@ -80,7 +80,7 @@ class AuthController {
       if (!user) {
         return res.status(401).json({
           status: "error",
-          message: "Invalid credentials",
+          message: "Không tìm thấy tài khoản",
         });
       }
 
@@ -113,6 +113,7 @@ class AuthController {
             id: user.id,
             email: user.email,
             full_name: user.full_name,
+            is_admin: user?.is_admin ?? false,
           },
           token,
         },
@@ -152,6 +153,7 @@ class AuthController {
             email: user.email,
             full_name: user.full_name,
             phone_number: user.phone_number,
+            is_admin: user?.is_admin ?? false,
           },
         },
       });

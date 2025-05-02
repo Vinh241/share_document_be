@@ -1,9 +1,9 @@
 -- Insert users
 INSERT INTO users (email, phone_number, password_hash, full_name, is_admin) 
 VALUES 
-  ('admin@bookstore.com', '+11234567890', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'Admin User', TRUE),  -- password: admin123
-  ('john@example.com', '+12345678901', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'John Doe', FALSE),  -- password: admin123
-  ('jane@example.com', '+13456789012', '$2a$10$N.UYwfj2/nVuP1ZsxMv8jOj9vmQ7LuZJAYwO0CeNUWCBq4dW5DP7i', 'Jane Smith', FALSE);  -- password: admin123
+  ('admin@bookstore.com', '+11234567890', '$2a$10$szCg/g0AVvDYhiGufUGYN.LOLWLPeH05jWZ3kVHCNAoDThXOaSXQC', 'Admin User', TRUE),  -- password: admin123
+  ('john@example.com', '+12345678901', '$2a$10$szCg/g0AVvDYhiGufUGYN.LOLWLPeH05jWZ3kVHCNAoDThXOaSXQC', 'John Doe', FALSE),  -- password: admin123
+  ('jane@example.com', '+13456789012', '$2a$10$szCg/g0AVvDYhiGufUGYN.LOLWLPeH05jWZ3kVHCNAoDThXOaSXQC', 'Jane Smith', FALSE);  -- password: admin123
 
 
 -- Insert categories
