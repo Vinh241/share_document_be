@@ -1,4 +1,5 @@
 import * as orderRepository from "../repositories/orderRepository";
+import * as productService from "../services/productService";
 import { Order, OrderItem, OrderStatus } from "../types";
 
 /**
@@ -6,9 +7,24 @@ import { Order, OrderItem, OrderStatus } from "../types";
  */
 export const createOrder = async (orderData: any) => {
   try {
-    console.log("vaoday");
     // Extract order items from the order data
     const { items, ...orderDetails } = orderData;
+
+    // Kiểm tra tồn kho cho tất cả sản phẩm trong đơn hàng
+    if (items && items.length > 0) {
+      for (const item of items) {
+        const hasStock = await productService.hasEnoughStock(
+          item.product_id,
+          item.quantity
+        );
+
+        if (!hasStock) {
+          throw new Error(
+            `Product with ID ${item.product_id} does not have enough stock`
+          );
+        }
+      }
+    }
 
     // Create the order
     const order = await orderRepository.createOrder(orderDetails);

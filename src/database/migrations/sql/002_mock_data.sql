@@ -42,7 +42,8 @@ VALUES
   ('Ngôi nhà ma ám', 'ngoi-nha-ma-am', 'Tiểu thuyết kinh dị của Stephen King.', 380000, 320000, 30, 85, 5, 2, 2, '9780307743657', '1977-01-28'),
   ('Kiêu hãnh và Định kiến', 'kieu-hanh-va-dinh-kien', 'Tiểu thuyết lãng mạn của Jane Austen.', 300000, 250000, 45, 67, 1, 3, 3, '9780141439518', '1813-01-28'),
   ('1984', '1984', 'Tiểu thuyết viễn tưởng chính trị-xã hội của George Orwell.', 350000, 290000, 60, 93, 3, 4, 4, '9780451524935', '1949-06-08'),
-  ('Mắt biếc', 'mat-biec', 'Tiểu thuyết thanh xuân của Nguyễn Nhật Ánh.', 280000, 230000, 75, 145, 1, 2, 5, '9781524763138', '2018-11-13');
+  ('Mắt biếc', 'mat-biec', 'Tiểu thuyết thanh xuân của Nguyễn Nhật Ánh.', 280000, 230000, 75, 145, 1, 2, 5, '9781524763138', '2018-11-13'),
+  ('Tôi thấy hoa vàng trên cỏ xanh', 'toi-thay-hoa-vang-tren-co-xanh', 'Tiểu thuyết thanh xuân nổi tiếng của Nguyễn Nhật Ánh.', 320000, 280000, 0, 200, 1, 1, 5, '9781234567890', '2022-05-15');
 
 -- Insert product images
 INSERT INTO product_images (product_id, image_url, is_primary)
@@ -52,7 +53,8 @@ VALUES
   (2, '/images/products/the-shining-1.jpg', true),
   (3, '/images/products/pride-prejudice-1.jpg', true),
   (4, '/images/products/1984-1.jpg', true),
-  (5, '/images/products/becoming-1.jpg', true);
+  (5, '/images/products/becoming-1.jpg', true),
+  (6, '/images/products/out-of-stock-book.jpg', true);
 
 -- Insert orders
 INSERT INTO orders (user_id, status, total_amount, shipping_address, payment_method, payment_status)

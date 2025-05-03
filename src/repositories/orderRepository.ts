@@ -82,3 +82,40 @@ export const savePaymentDetails = async (
     created_at: new Date(),
   });
 };
+
+/**
+ * Update product stock quantities for a completed order
+ */
+export const updateProductStockForOrder = async (
+  orderId: number
+): Promise<boolean> => {
+  const trx = await db.transaction();
+
+  try {
+    // Get order items
+    const orderItems = await trx("order_items")
+      .where({ order_id: orderId })
+      .select("product_id", "quantity");
+
+    if (!orderItems || orderItems.length === 0) {
+      await trx.commit();
+      return false;
+    }
+
+    // Update stock for each product
+    for (const item of orderItems) {
+      // Decrease stock and increase quantity_sold
+      await trx("products")
+        .where({ id: item.product_id })
+        .decrement("stock_quantity", item.quantity)
+        .increment("quantity_sold", item.quantity);
+    }
+
+    await trx.commit();
+    return true;
+  } catch (error) {
+    await trx.rollback();
+    console.error("Error updating product stock:", error);
+    throw error;
+  }
+};

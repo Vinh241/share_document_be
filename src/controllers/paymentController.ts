@@ -98,6 +98,16 @@ export const momoPaymentReturn = async (req: Request, res: Response) => {
     // Lưu thông tin thanh toán
     await orderRepository.savePaymentDetails(originalOrderId, paymentData);
 
+    // Cập nhật số lượng tồn kho (stock_quantity) khi thanh toán thành công
+    try {
+      await orderRepository.updateProductStockForOrder(originalOrderId);
+      console.log("Updated stock quantities for order:", originalOrderId);
+    } catch (error) {
+      console.error("Failed to update stock quantities:", error);
+      // We don't want to fail the payment if stock update fails
+      // This should be handled by an admin later
+    }
+
     console.log("Payment completed for order:", originalOrderId);
 
     // Redirect to frontend with payment status
@@ -221,6 +231,16 @@ export const getPaymentStatus = async (req: Request, res: Response) => {
     // Luôn cập nhật trạng thái thanh toán thành công và trạng thái đơn hàng sang processing
     await orderRepository.updatePaymentStatus(orderIdNumber, "completed");
     await orderRepository.updateOrderStatus(orderIdNumber, "processing");
+
+    // Cập nhật số lượng tồn kho (stock_quantity) khi thanh toán thành công
+    try {
+      await orderRepository.updateProductStockForOrder(orderIdNumber);
+      console.log("Updated stock quantities for order:", orderIdNumber);
+    } catch (error) {
+      console.error("Failed to update stock quantities:", error);
+      // We don't want to fail the payment if stock update fails
+      // This should be handled by an admin later
+    }
 
     return res.status(200).json({
       success: true,

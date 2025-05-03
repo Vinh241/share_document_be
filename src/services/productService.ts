@@ -131,3 +131,22 @@ export const getBestsellerProducts = async (
 export const getProductsByIds = async (ids: number[]): Promise<Product[]> => {
   return productRepository.findByIds(ids);
 };
+
+/**
+ * Check if a product is in stock (has stock_quantity > 0)
+ */
+export const isProductInStock = async (productId: number): Promise<boolean> => {
+  const product = await productRepository.findById(productId);
+  return product ? product.stock_quantity > 0 : false;
+};
+
+/**
+ * Check if a product has enough stock for the requested quantity
+ */
+export const hasEnoughStock = async (
+  productId: number,
+  quantity: number
+): Promise<boolean> => {
+  const product = await productRepository.findById(productId);
+  return product ? product.stock_quantity >= quantity : false;
+};
