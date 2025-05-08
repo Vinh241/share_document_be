@@ -7,6 +7,7 @@ import authRoutes from "./auth";
 import ordersRoutes from "./orders";
 import adminRoutes from "./admin";
 import uploadsRoutes from "./uploads";
+import usersRoutes from "./users";
 
 const router = Router();
 
@@ -36,5 +37,6 @@ router.use("/auth", authRoutes);
 router.use("/orders", ordersRoutes);
 router.use("/admin", adminRoutes);
 router.use("/upload", uploadsRoutes);
+router.use("/users", usersRoutes);
 
 export default router;
