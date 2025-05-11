@@ -259,6 +259,63 @@ class AdminController {
   };
 
   /**
+   * Get slow-selling products
+   */
+  getSlowSellingProducts = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void | Response> => {
+    try {
+      if (!req.userId || !req.isAdmin) {
+        return res.status(403).json({
+          status: "error",
+          message: "Forbidden - Admin access required",
+        });
+      }
+
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+
+      const products = await db("products")
+        .join("categories", "products.category_id", "=", "categories.id")
+        .select(
+          "products.id",
+          "products.name",
+          "products.price",
+          "products.quantity_sold",
+          "products.stock_quantity",
+          "categories.name as category_name"
+        )
+        .orderBy("products.stock_quantity", "desc")
+        .limit(limit);
+
+      // Get primary images for each product
+      const productsWithImages = await Promise.all(
+        products.map(async (product) => {
+          const image = await db("product_images")
+            .where({ product_id: product.id })
+            .where({ is_primary: true })
+            .first();
+
+          return {
+            ...product,
+            image_url: image ? image.image_url : null,
+          };
+        })
+      );
+
+      return res.json({
+        status: "success",
+        data: {
+          products: productsWithImages,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
    * Get total sales by date range
    */
   getSalesByDate = async (
