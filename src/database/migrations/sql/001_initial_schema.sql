@@ -25,7 +25,7 @@ DROP TYPE IF EXISTS payment_method;
 CREATE TYPE user_status AS ENUM ('active', 'inactive', 'pending');
 CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled');
 CREATE TYPE payment_status AS ENUM ('pending', 'completed', 'failed', 'refunded');
-CREATE TYPE payment_method AS ENUM ('credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery','momo');
+CREATE TYPE payment_method AS ENUM ('credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery','momo','cod');
 CREATE TYPE referral_status AS ENUM ('pending', 'approved', 'rejected');
 CREATE TYPE transaction_status AS ENUM ('pending', 'completed', 'failed');
 CREATE TYPE transaction_type AS ENUM ('payment', 'refund', 'withdrawal', 'deposit');
