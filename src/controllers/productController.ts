@@ -214,14 +214,13 @@ export const getProductReviews = async (
   next: NextFunction
 ) => {
   try {
-    const productId = Number(req.params.id);
-    if (isNaN(productId)) {
-      throw new AppError("Invalid product ID", 400);
-    }
+    const productId = parseInt(req.params.id);
 
-    const product = await productService.getProductById(productId);
-    if (!product) {
-      throw new AppError("Product not found", 404);
+    if (isNaN(productId)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid product ID",
+      });
     }
 
     const reviews = await reviewService.getProductReviews(productId);
@@ -230,10 +229,113 @@ export const getProductReviews = async (
     );
     const reviewCount = await reviewService.getProductReviewCount(productId);
 
-    res.json({
+    return res.json({
       reviews,
       average_rating: averageRating,
       review_count: reviewCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Create a product review
+ */
+export const createProductReview = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // User must be authenticated
+    if (!req.userId) {
+      return res.status(401).json({
+        status: "error",
+        message: "You must be logged in to review products",
+      });
+    }
+
+    const userId = req.userId;
+    const productId = parseInt(req.params.id);
+    const { rating, comment } = req.body;
+
+    if (isNaN(productId)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid product ID",
+      });
+    }
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({
+        status: "error",
+        message: "Rating must be between 1 and 5",
+      });
+    }
+
+    // Create the review
+    const review = await reviewService.createReview(
+      userId,
+      productId,
+      rating,
+      comment
+    );
+
+    // Get updated review stats
+    const averageRating = await reviewService.getProductAverageRating(
+      productId
+    );
+    const reviewCount = await reviewService.getProductReviewCount(productId);
+
+    return res.status(201).json({
+      status: "success",
+      data: {
+        review,
+        average_rating: averageRating,
+        review_count: reviewCount,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get current user's review for a product
+ */
+export const getUserProductReview = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // User must be authenticated
+    if (!req.userId) {
+      return res.status(401).json({
+        status: "error",
+        message: "You must be logged in to view your review",
+      });
+    }
+
+    const userId = req.userId;
+    const productId = parseInt(req.params.id);
+
+    if (isNaN(productId)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid product ID",
+      });
+    }
+
+    const review = await reviewService.getUserProductReview(userId, productId);
+
+    return res.json({
+      status: "success",
+      data: {
+        review,
+        has_reviewed: !!review,
+      },
     });
   } catch (error) {
     next(error);

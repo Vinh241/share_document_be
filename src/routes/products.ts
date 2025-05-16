@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as productController from "../controllers/productController";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -16,6 +17,20 @@ router.get("/:id", productController.getProductById);
 
 // Get product reviews
 router.get("/:id/reviews", productController.getProductReviews);
+
+// Get user's review for a product (requires authentication)
+router.get(
+  "/:id/user-review",
+  authenticate,
+  productController.getUserProductReview
+);
+
+// Create or update a product review (requires authentication)
+router.post(
+  "/:id/reviews",
+  authenticate,
+  productController.createProductReview
+);
 
 // Create a new product
 router.post("/", productController.createProduct);
