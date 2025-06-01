@@ -25,7 +25,9 @@ class OrderController {
 
       // Create the order
       const order = await orderService.createOrder(orderData);
-
+      if (req.body.payment_method === "cod") {
+        await orderRepository.updateProductStockForOrder(order.id);
+      }
       return res.status(201).json({
         success: true,
         data: {

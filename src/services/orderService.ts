@@ -40,9 +40,6 @@ export const createOrder = async (orderData: any) => {
 
       // Create order items
       await orderRepository.createOrderItems(orderItems);
-
-      // Cập nhật số lượng sản phẩm trong kho sau khi tạo đơn hàng thành công
-      await orderRepository.updateProductStockForOrder(order.id);
     }
 
     // Return the created order

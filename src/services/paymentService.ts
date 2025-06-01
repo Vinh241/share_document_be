@@ -315,7 +315,7 @@ export const createVnpayPaymentRequest = async (
       vnp_TmnCode: vnpayConfig.tmnCode,
       vnp_Locale: vnpayConfig.locale,
       vnp_CurrCode: vnpayConfig.currCode,
-      vnp_TxnRef: `${orderId}`, // Add orderId for tracking
+      vnp_TxnRef: `${Date.now()}_${orderId}`, // Add orderId for tracking
       vnp_OrderInfo: orderInfo || `Thanh toan don hang ${orderId}`,
       vnp_OrderType: "other",
       vnp_Amount: (Math.round(amount) * 100).toString(),
