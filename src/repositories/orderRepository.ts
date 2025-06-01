@@ -73,11 +73,31 @@ export const savePaymentDetails = async (
   orderId: number,
   paymentDetails: any
 ) => {
+  // Determine provider based on payment data structure
+  let provider = "unknown";
+  let transactionId = "";
+  let amount = 0;
+
+  if (paymentDetails.transId || paymentDetails.partnerCode) {
+    // Momo payment
+    provider = "momo";
+    transactionId = paymentDetails.transId || paymentDetails.orderId;
+    amount = paymentDetails.amount;
+  } else if (paymentDetails.vnp_TransactionNo || paymentDetails.vnp_TxnRef) {
+    // VNPay payment
+    provider = "vnpay";
+    transactionId =
+      paymentDetails.vnp_TransactionNo || paymentDetails.vnp_TxnRef;
+    amount = paymentDetails.vnp_Amount
+      ? parseInt(paymentDetails.vnp_Amount) / 100
+      : 0;
+  }
+
   await db("payment_details").insert({
     order_id: orderId,
-    provider: "momo",
-    transaction_id: paymentDetails.transId || paymentDetails.orderId,
-    amount: paymentDetails.amount,
+    provider: provider,
+    transaction_id: transactionId,
+    amount: amount,
     payment_data: JSON.stringify(paymentDetails),
     created_at: new Date(),
   });

@@ -259,3 +259,200 @@ export const getPaymentStatus = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const createVnpayPayment = async (req: Request, res: Response) => {
+  try {
+    console.log("=== VNPay Payment Request ===");
+    console.log("Request body:", JSON.stringify(req.body, null, 2));
+
+    const { amount, orderInfo, orderData } = req.body;
+
+    // Detailed validation with logging
+    if (!amount || isNaN(Number(amount))) {
+      console.error("Invalid amount:", amount);
+      return res.status(400).json({
+        success: false,
+        message: "Valid amount is required",
+      });
+    }
+
+    if (!orderData || typeof orderData !== "object") {
+      console.error("Invalid orderData:", orderData);
+      return res.status(400).json({
+        success: false,
+        message: "Valid order data is required",
+      });
+    }
+
+    const numericAmount = Number(amount);
+    console.log("Processed amount:", numericAmount);
+    console.log("Order info:", orderInfo);
+
+    // Tạo đơn hàng trước với trạng thái pending và payment_status pending
+    const orderCreateData = {
+      ...orderData,
+      user_id: orderData.user_id || req.userId,
+      status: "pending",
+      payment_status: "pending",
+      payment_method: "vnpay",
+    };
+
+    console.log("Order create data:", JSON.stringify(orderCreateData, null, 2));
+
+    // Tạo đơn hàng trong database
+    const order = await orderService.createOrder(orderCreateData);
+    console.log("Created order ID:", order.id);
+
+    // Validate order creation
+    if (!order || !order.id) {
+      throw new Error("Failed to create order");
+    }
+
+    // Tạo thanh toán VNPay với orderId vừa tạo
+    const paymentResult = await paymentService.createVnpayPaymentRequest(
+      req,
+      order.id,
+      numericAmount,
+      orderInfo || `Thanh toan don hang ${order.id}`
+    );
+
+    console.log(
+      "VNPay payment result:",
+      JSON.stringify(paymentResult, null, 2)
+    );
+
+    // Validate payment result
+    if (!paymentResult || !paymentResult.success) {
+      throw new Error("Failed to create VNPay payment request");
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...paymentResult,
+        orderId: order.id,
+      },
+    });
+  } catch (error: any) {
+    console.error("=== VNPay Payment Error ===");
+    console.error("Error details:", error);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create VNPay payment",
+      error: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    });
+  }
+};
+
+export const vnpayPaymentReturn = async (req: Request, res: Response) => {
+  try {
+    // This endpoint is called when user returns from VNPay payment page
+    const paymentData = req.query;
+
+    console.log("VNPay payment return data:", paymentData);
+
+    // Process the payment data similar to Momo
+    let originalOrderId: number;
+    const vnpTxnRef = paymentData.vnp_TxnRef as string;
+
+    console.log("VNPay TxnRef:", vnpTxnRef);
+
+    // Extract orderId from TxnRef format: HHmmssOrderId (no underscore)
+    if (vnpTxnRef && vnpTxnRef.length > 6) {
+      // Get everything after the first 6 characters (HHmmss)
+      const orderIdPart = vnpTxnRef.substring(6);
+      originalOrderId = parseInt(orderIdPart, 10);
+      console.log("Extracted orderId from TxnRef:", originalOrderId);
+    } else if (vnpTxnRef && vnpTxnRef.includes("_")) {
+      // Fallback for old format with underscore
+      const parts = vnpTxnRef.split("_");
+      originalOrderId = parseInt(parts[parts.length - 1], 10);
+      console.log("Extracted orderId from old format:", originalOrderId);
+    } else {
+      // Last fallback
+      originalOrderId = parseInt(vnpTxnRef, 10);
+      console.log("Using TxnRef as orderId:", originalOrderId);
+    }
+
+    console.log("Original Order ID:", originalOrderId);
+
+    // Validate orderId
+    if (!originalOrderId || isNaN(originalOrderId)) {
+      throw new Error(`Invalid order ID extracted from TxnRef: ${vnpTxnRef}`);
+    }
+
+    // Always update payment status to success (like Momo implementation)
+    await orderRepository.updatePaymentStatus(originalOrderId, "completed");
+    await orderRepository.updateOrderStatus(originalOrderId, "processing");
+
+    // Save payment information
+    await orderRepository.savePaymentDetails(originalOrderId, paymentData);
+
+    // Update stock quantities when payment successful
+    try {
+      await orderRepository.updateProductStockForOrder(originalOrderId);
+      console.log("Updated stock quantities for order:", originalOrderId);
+    } catch (error) {
+      console.error("Failed to update stock quantities:", error);
+    }
+
+    console.log("VNPay payment completed for order:", originalOrderId);
+
+    // Redirect to frontend with payment status
+    const frontendUrl = "http://localhost:5173/payment-result";
+    const queryParams = new URLSearchParams({
+      status: "success",
+      orderId: originalOrderId.toString(),
+      message: "Thanh toán VNPay thành công",
+    }).toString();
+
+    return res.redirect(`${frontendUrl}?${queryParams}`);
+  } catch (error: any) {
+    console.error("VNPay payment return error:", error);
+
+    // Redirect to frontend with error
+    return res.redirect(
+      `http://localhost:5173/payment-result?status=error&message=${error.message}`
+    );
+  }
+};
+
+export const vnpayPaymentIpn = async (req: Request, res: Response) => {
+  try {
+    console.log("Nhận được callback IPN từ VNPay");
+    console.log("IPN Headers:", req.headers);
+    console.log("IPN Method:", req.method);
+    console.log("IPN Body:", req.body);
+    console.log("IPN Query:", req.query);
+
+    // VNPay sends IPN via GET request with query parameters
+    const paymentData = req.query;
+
+    console.log(
+      "VNPay IPN received data:",
+      JSON.stringify(paymentData, null, 2)
+    );
+
+    // Process the payment data
+    const result = await paymentService.processVnpayPaymentCallback(
+      paymentData
+    );
+
+    // Always return HTTP 200 to VNPay to acknowledge receipt
+    return res.status(200).json({
+      RspCode: "00",
+      Message: "Confirm Success",
+    });
+  } catch (error: any) {
+    console.error("VNPay IPN error:", error);
+
+    // Always return HTTP 200 to VNPay, even for errors
+    return res.status(200).json({
+      RspCode: "99",
+      Message: error.message || "Unknow error",
+    });
+  }
+};

@@ -151,7 +151,8 @@ export type PaymentMethod =
   | "paypal"
   | "bank_transfer"
   | "cash_on_delivery"
-  | "momo";
+  | "momo"
+  | "vnpay";
 
 export interface Order {
   id: number;

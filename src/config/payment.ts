@@ -17,3 +17,20 @@ export const momoConfig = {
   ipnUrl:
     process.env.MOMO_IPN_URL || "http://localhost:3000/api/payments/momo/ipn",
 };
+
+export const vnpayConfig = {
+  tmnCode: process.env.VNPAY_TMN_CODE || "CGXZLS0Z",
+  hashSecret:
+    process.env.VNPAY_HASH_SECRET || "XNBCJFAKAZQSGTARRLGCHVZWCIOIGSHN",
+  version: "2.1.0",
+  command: "pay",
+  currCode: "VND",
+  locale: "vn",
+  apiUrl:
+    process.env.VNPAY_URL ||
+    "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+  returnUrl:
+    process.env.VNPAY_RETURN_URL || "http://localhost:5173/payment-result",
+  ipnUrl:
+    process.env.VNPAY_IPN_URL || "http://localhost:3000/api/payments/vnpay/ipn",
+};
